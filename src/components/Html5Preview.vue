@@ -7,13 +7,13 @@
 		</label>
 
 		<div id="file-list" v-if="fileList.length">
-			<div class="file-list-item" v-for="item in fileList" @click="getContent(item)">{{ item.name }}</div>
+			<div class="file-list-item" v-for="item in fileList" :key="item.name" @click="getContent(item)">{{ item.name }}</div>
 		</div>
 
 		<div  v-if="fileTitle">
 			<h4 align='right'>{{fileTitle}}</h4>
 			<div id="file-content">{{fileContent}}</div>		
-			<img id="file-image"></img>
+			<img id="file-image">
 		</div>
 
 	</div>
@@ -48,45 +48,45 @@ export default {
 			this.fileInput.addEventListener('change', this.onFileSelect);
 		},
 
-		onFileSelect: function(e){
+		onFileSelect: function(){
 			this.updateList(this.fileInput.files[0]);
 		},
 
 		updateList: function(f){
 			this.fileList = [];
-        	JSZip.loadAsync(f).then((zip)=> {
-        		zip.forEach((path, item) => {
-    				this.fileList.push(item);
+			JSZip.loadAsync(f).then((zip)=> {
+				zip.forEach((path, item) => {
+					this.fileList.push(item);
 				})
-        	}), (error)=>{
-        		console.log('erro no zip');
-        	}
-        },
+			}), (error)=>{
+				console.log(error);
+			}
+		},
 
-        getContent: function(f){
-        	this.fileTitle = f.name;
-        	this.fileContent = '';
+		getContent: function(f){
+			this.fileTitle = f.name;
+			this.fileContent = '';
 
-        	if(this.fileIsImage(f)){
+			if(this.fileIsImage(f)){
 				f.async("arraybuffer").then(data => {
 					var buffer = new Uint8Array(data);
 					var blob = new Blob([buffer.buffer]);
 					var img = document.querySelector("#file-image");
 					img.src = URL.createObjectURL(blob);
 				});
-        	}else{
-        		f.async('text').then(data => {
-        			document.querySelector("#file-image").src='';
+			}else{
+				f.async('text').then(data => {
+					document.querySelector("#file-image").src='';
 					this.fileContent = data;
 				});
-        	}
-        },
+			}
+		},
 
-        fileIsImage: function(f){
+		fileIsImage: function(f){
 			return (/\.(gif|jpg|jpeg|png)$/i).test(f.name);
-        }
+		}
 
-    },
+	},
 
 	mounted: function(){
 		this.init();
